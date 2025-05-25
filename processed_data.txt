@@ -1,0 +1,4 @@
+Processed People Data:
+Name: Alice, Age: 30, City: New York
+Name: Bob, Age: 24, City: London
+Name: Charlie, Age: 35, City: Paris
