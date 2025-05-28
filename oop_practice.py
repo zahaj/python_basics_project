@@ -77,7 +77,6 @@ class Dog:
         """
         Initializes a new Dog instance and increments the dog_count.
 
-
         Args:
             name (str): The name of the dog.
             breed (str): The breed of the dog.
