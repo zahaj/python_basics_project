@@ -1,6 +1,9 @@
 # Day 5: Advanced OOP & Testing Basics
 
 from typing import List, Union, Any, Optional
+from abc import ABC, abstractmethod
+import math
+import datetime
 
 class InsufficientFundsError(Exception):
     """Raised when a bank account withdrawal is attempted with insufficient funds."""
@@ -9,6 +12,34 @@ class InsufficientFundsError(Exception):
 class InvalidAmountError(Exception):
     """Raised when a deposit or withdrawal amount is zero, negative, or non-numeric."""
     pass
+
+# Simple Data Logging
+def log_transaction(account_holder: str, transaction_type: str, amount: float, current_balance: float):
+    """Logs a bank transaction to 'bank_transactions.log'."""
+
+    if not isinstance(account_holder, str) or not account_holder.strip():
+        raise ValueError("Account holder must be a non-empty string")
+    if not isinstance(transaction_type, str) or not transaction_type.strip():
+        raise ValueError("Account holder must be a non-empty string")
+    if not isinstance(amount, (float, int)) or amount <= 0:
+        raise ValueError("Amount must be a positive number")
+    if not isinstance(current_balance, (float)):
+        raise ValueError("Current balance must be a number")
+
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    log_message = (
+        f"{timestamp} | Account: {account_holder} | Type: {transaction_type} | "
+        f"Amount: {amount:.2f} | Balance: {current_balance:.2f}\n"
+    )
+    # Appending transaction log to a log file 
+    log_file_name = 'bank_transactions.log'
+    
+    try:
+        with open(log_file_name, "a") as log_file:
+            log_file.write(log_message)
+        print(f"Logged transaction for {account_holder}: {transaction_type} ${amount:.2f}")
+    except OSError as e:
+        print(f"ERROR: Could not write to log file: {e}")
 
 class BankAccount:
     """
@@ -39,6 +70,7 @@ class BankAccount:
         
         self._balance += amount
         print(f"Deposited ${amount:.2f}. New balance: ${self._balance:.2f}")
+        log_transaction(self.account_holder, "Deposit", amount, self._balance)
 
     def withdraw(self, amount: float):
         if not isinstance(amount, (float, int)) or amount <= 0:
@@ -49,6 +81,7 @@ class BankAccount:
         else:
             self._balance -= amount
             print(f"Withdrew ${amount:.2f}. New balance: ${self._balance:.2f}")
+            log_transaction(self.account_holder, "Withdraw", amount, self._balance)
 
     def __str__(self) -> str:
         return f"Account for {self.account_holder}: Balance = ${self._balance:.2f}"
@@ -107,6 +140,12 @@ except Exception as e:
 
 class Dog: # Redefining Dog class to include properties
     def __init__(self, name: str, breed: str, age: int):
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError("Dog's name must be a non-empty string.")
+        if not isinstance(breed, str) or not breed.strip():
+            raise ValueError("Dog's breed must be a non-empty string.")
+        if not isinstance(age, int) or age < 0:
+            raise ValueError(f"Age must be a non-negative integer.")
         self.name = name
         self.breed = breed
         # Call the setter for initial validation
@@ -119,7 +158,7 @@ class Dog: # Redefining Dog class to include properties
         return self._age # Returns the internal value
     
     @age.setter  # Decorator for the setter method
-    def age(self, new_age: int):
+    def age(self, new_age: int): # setter property with validation
         # print(f"DEBUG: Setting age to {new_age}...")
         if not isinstance(new_age, int) or new_age < 0:
             raise ValueError(f"Invalid age '{new_age}'. Age must be a non-negative integer.")
@@ -297,3 +336,208 @@ car.radio.change_station() # Direct interaction with composed object
 car.engine.stop()
 car.stop_driving()
 
+class Shape:
+    """This is a base class for different shapes."""
+
+    def area(self) -> int:
+        """Calculates the area of the shape."""
+        return 0
+
+    def perimeter(self):
+        """Calculates the perimeter of the shape."""
+        return 0
+    
+    def __str__(self):
+        return f"Shape()"
+    
+    def __repr__(self):
+        return f"Shape()"
+    
+class Circle(Shape):
+
+    def __init__(self, radius: Union[int, float]):
+        if not isinstance(radius, (int, float)) or radius <= 0:
+            raise ValueError("Radius must be a positive number")
+        self.radius = radius
+
+    def area(self):
+        """Calculates an area of a circle."""
+        area = math.pi * self.radius ** 2
+        return area
+    
+    def perimeter(self):
+        """Returns a perimeter of a circle."""
+        perimeter = 2 * math.pi * self.radius
+        return perimeter
+
+    def __str__(self):
+        return f"Circle(Radius: {self.radius})"
+
+    def __repr__(self):
+        return f"Circle(radius={self.radius})"
+
+class Rectangle(Shape):
+    
+    def __init__(self, length: Union[int, float], width: Union[int, float]):
+        if not isinstance(length, (int, float)) or length <= 0:
+            raise ValueError("Length must be a positive number")
+        if not isinstance(width, (int, float)) or width <= 0:
+            raise ValueError("Width must be a positive number")
+        self.length = length
+        self.width = width
+    
+    def area(self):
+        """Returns an area of a rectangle with sides: length and width."""
+        area =  self.length * self.width
+        return area
+
+    def perimeter(self):
+        """Returns a perimeter of a rectangle with sides: length and width."""
+        perimeter = 2 * (self.length + self.width)
+        return perimeter
+    
+    def __str__(self):
+        return f"Rectangle(Length: {self.length}, Width: {self.width})"
+
+    def __repr__(self):
+        return f"Rectangle(length={self.length}, width={self.width})"
+
+class Vector:
+
+    def __init__(self, x: Union[int, float], y: Union[int, float]):
+        # First, explicitly check if the type is boolean and disallow it
+        if isinstance(x, bool): # Check for bool first!
+            raise TypeError("Vector x-coordinate cannot be a boolean value.")
+        if not isinstance(x, (int, float)):
+            raise TypeError("Vector x-coordinate must be a number.")
+        # First, explicitly check if the type is boolean and disallow it
+        if isinstance(y, bool): # Check for bool first!
+            raise TypeError("Vector y-coordinate cannot be a boolean value.")
+        if not isinstance(y, (int, float)):
+            raise TypeError("Vector y-coordinate must be a number.")
+        self.x = x
+        self.y = y
+
+    def __add__(self, other):
+        """Implements vector addition (self + other)."""
+        if not isinstance(other, Vector):
+            raise TypeError(f"Unsupported operand type for +: 'Vector' and '{type(other).__name__}'")
+        return Vector(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other):
+        """Implements vector subtraction (self - other)."""
+        if not isinstance(other, Vector):
+            raise TypeError(f"Unsupported operand type for -: 'Vector' and '{type(other).__name__}'")
+        return Vector(self.x - other.x, self.y - other.y)
+
+    def __eq__(self, other):
+        """Implements vector equality (self == other)"""
+        if not isinstance(other, Vector):
+            return NotImplemented #or False, depending on strictness
+        return (self.x == other.x) and (self.y == other.y)
+
+    def __ne__(self, other):
+        """Implements vector inequality (self != other)"""
+        if not isinstance(other, Vector):
+            return NotImplemented # Or False, depending on strictness
+            """Crucial Point: When a comparison method (like __eq__, __ne__, __lt__, etc.) returns NotImplemented,
+            Python doesn't immediately raise an error. Instead, it tries a reverse operation if one is available.
+            For a != b, if a.__ne__(b) returns NotImplemented, Python then tries b.__ne__(a).
+            If b (e.g., a string or None) doesn't have a meaningful __ne__ that handles Vector objects, or if it
+            also returns NotImplemented, then Python falls back to a default behavior for !=.
+            The default behavior for a != b when neither object can explicitly compare is generally to return
+            the opposite of a is b (identity comparison)."""
+        return (self.x != other.x) or (self.y != other.y)
+
+    def __mul__(self, scalar: Union[int, float]):
+        """Implements scalar multiplication (vector * scalar)."""
+        if not isinstance(scalar, (int, float)):
+            raise TypeError(f"Unsupported operand type for *: 'Vector' and '{type(scalar).__name__}' (expected scalar)")
+        return Vector(self.x * scalar, self.y * scalar)
+
+    def magnitude(self) -> float:
+        """Calculates the Euclidean magnitude (length) of the vector."""
+        return math.sqrt(self.x ** 2 + self.y ** 2)
+    
+    def __str__(self):
+        return f"Vector({self.x}, {self.y}))"
+
+    def __repr__(self):
+        return f"Vector(x={self.x}, y={self.y}))"
+
+if __name__ == "__main__":
+    print("--- Day 6 Demonstrations ---")
+
+    print("\n### Shape Hierarchy and Polymorphism (Problem 1.1) ###")
+    shapes : list[Circle, Rectangle] = [Circle(5.5), Rectangle(3, 4)]
+    for shape in shapes:
+        # Printing string representation and both area and perimeter.
+        print(f"The area of {shape}: {shape.area()}.")
+        print(f"The perimeter of {shape}: {shape.perimeter()}.")
+
+    print("\n### Vector Class with Dunder Methods (Problem 2.1) ###")
+    vector1 = Vector(-1.5, 0)
+    vector2 = Vector(10, 20)
+    vector3 = Vector(0,0)
+
+    print(f"vector1: {vector1}")
+    print(f"vector2: {vector2}")
+
+    # Demonstrate addition using +
+    print(f"vector 1 + vector 2: {vector1 + vector2}.")
+    # Demonstrate equality using ==
+    print(f"vector 1 == vector 2: {vector1 == vector2}.")
+    # Demonstrate scalar multiplication using *
+    print(f"vector 1 == vector 2: {vector1 == vector2}.")
+    # Attempt to add a Vector to a non-Vector (e.g., an int)
+    try:
+        Vector(3, 5) + 17
+    except TypeError as e:
+        print(f"Caught expected error: {e}.")
+    
+    try:
+        vector1 * vector2
+    except TypeError as e:
+        print(f"Caught expected error: {e}.")
+
+    try:
+        vector3 == vector3.magnitude()
+    except TypeError as e:
+        print(f"Caught expected error: {e}.")
+
+    # Try to instantiate an abstract shape (should raise TypeError)
+    try:
+        # generic_shape = Shape()
+        print("Instantiated abstract Shape (this should not happen!)")
+    except TypeError as e:
+        print(f"Caught expected error: {e}")
+
+# Test unsupported operations (TypeError)
+    try:
+        vector1 + "hello"
+    except TypeError as e:
+        print(f"Caught expected error: {e}")
+
+    try:
+        vector1 * vector2
+    except TypeError as e:
+        print(f"Caught expected error: {e}")
+
+    try:
+        vector1 == "not_a_vector"
+    except TypeError: # This depends on how __eq__ is implemented; NotImplemented will return False
+        print("Caught TypeError when comparing vector to non-vector (if __eq__ is strict)")
+    print(f"vector1 == 'not_a_vector': {vector1 == 'not_a_vector'}") # If __eq__ returns NotImplemented, this will be False
+
+    print("\n### BankAccount with File I/O (Problem 3.1) ###")
+    # Make sure to delete or clear 'bank_transactions.log' before running multiple times for clean test
+    my_logged_account = BankAccount("Alice Smith", 200.00)
+    print(my_logged_account)
+    try:
+        my_logged_account.deposit(75.50)
+        my_logged_account.withdraw(20.00)
+        my_logged_account.withdraw(500.00) # Should raise InsufficientFundsError and NOT log
+    except (InsufficientFundsError, InvalidAmountError) as e:
+        print(f"Caught error in transaction: {e}")
+    
+    print(f"Check 'bank_transactions.log' file for entries.")
