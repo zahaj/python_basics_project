@@ -1,0 +1,14 @@
+[
+    {
+        "account_holder": "Alice Wonderland",
+        "balance": 200.0
+    },
+    {
+        "account_holder": "Bob The Builder",
+        "balance": 25.0
+    },
+    {
+        "account_holder": "Charlie Chaplin",
+        "balance": 1000.0
+    }
+]

@@ -4,6 +4,8 @@ from typing import List, Union, Any, Optional
 from abc import ABC, abstractmethod
 import math
 import datetime
+import csv
+import json
 
 class InsufficientFundsError(Exception):
     """Raised when a bank account withdrawal is attempted with insufficient funds."""
@@ -83,8 +85,76 @@ class BankAccount:
             print(f"Withdrew ${amount:.2f}. New balance: ${self._balance:.2f}")
             log_transaction(self.account_holder, "Withdraw", amount, self._balance)
 
-    def __str__(self) -> str:
-        return f"Account for {self.account_holder}: Balance = ${self._balance:.2f}"
+    def to_dict(self) -> dict[str, Any]:
+        """Returns a dictionary representation of the BankAccount."""
+        return {
+            "account_holder": self.account_holder,
+            "balance": self._balance # Accessing _balance directly here is fine
+        }
+
+    def __eq__(self, other):
+        """
+        Defines equality comparison for BankAccount objects.
+        Two BankAccounts are equal if they have the same account_holder and balance.
+        """
+        # First, check if 'other' is an instance of BankAccount.
+        # If not, they cannot be equal.
+        if not isinstance(other, BankAccount):
+            return NotImplemented # Or False, depending on strictness
+
+        # Compare relevant attributes
+        return (self.account_holder == other.account_holder and
+                self.balance == other.balance)
+
+    def __str__(self):
+        return f"BankAccount(Holder: {self.account_holder}, Balance: ${self.balance:.2f})"
+
+    def __repr__(self):
+        return f"BankAccount(account_holder='{self.account_holder}', initial_balance={self.balance})"
+
+def save_accounts_to_json(accounts: list[BankAccount], filename: str) -> None:
+    """Saves a list of BankAccount objects to a JSON file."""
+
+    data_to_save = [account.to_dict() for account in accounts]
+    try:    
+        with open(filename, "w", encoding='utf-8') as f:
+            json.dump(data_to_save, f, indent=4) # indent=4 makes it pretty-printed
+    except OSError as e:
+        print(f"ERROR: Could not save accounts to file '{filename}': {e}")
+    else:
+        print(f"Successfully saved {len(accounts)} accounts to '{filename}'")
+    finally:
+        print(f"Writing accounts attempt complete.")
+
+def load_accounts_from_json(filename: str) -> List[BankAccount]:
+    """Loads a list of BankAccount objects from a JSON file."""
+    accounts: List[BankAccount] = []
+    try:
+        with open(filename, "r", encoding='utf-8') as f:
+            loaded_data = json.load(f)
+
+        if not isinstance(loaded_data, list):
+                print(f"WARNING: JSON file '{filename}' does not contain a list. Returning empty list.")
+                return []
+        
+        for item_dict in loaded_data:
+            try:
+                bank_account = BankAccount(item_dict["account_holder"], item_dict["balance"])
+                accounts.append(bank_account)
+            except (ValueError, KeyError, TypeError) as e:
+                print(f"WARNING: Skipping invalid account entry from JSON: {item_dict}. Error: {e}")
+    except FileNotFoundError:
+        print(f"WARNING: File '{filename}' not found. Returning empty list.")
+    except json.JSONDecodeError as e:
+        print(f"ERROR: Invalid JSON format in '{filename}': {e}. Returning empty list.")
+    except OSError as e:
+        print(f"ERROR: Could not read accounts from file '{filename}': {e}. Returning empty list.")
+    except Exception as e:
+        print("Exception Caught: {e}")
+    else:
+        print(f"Successfully loaded {len(accounts)} accounts from '{filename}'")
+    
+    return accounts
 
 # --- BankAccount Demonstration ---
 print("\n--- BankAccount Demonstration ---")
@@ -465,7 +535,47 @@ class Vector:
     def __repr__(self):
         return f"Vector(x={self.x}, y={self.y}))"
 
+def perform_risky_operation(value_a: Union[int, float], value_b: Union[int, float], operation_type: str) -> Optional[Union[int, float]]:
+    """
+    Performs a risky operation and demonstrates try-except-else-finally.
+    Returns the result if successful, otherwise None.
+    """
+    result = None
+    print(f"\nAttempting operation: {value_a} {operation_type} {value_b}")
+    if not isinstance(value_a, (int, float)):
+        raise TypeError("Value 'a' must be a number.")
+    if not isinstance(value_b, (int, float)):
+        raise TypeError("Value 'b' must be a number.")
+    if not isinstance(operation_type, str):
+        raise TypeError("Operation_type must be a string.")
+    
+    try:
+        if operation_type == "divide":
+            result = value_a / value_b
+        elif operation_type == "multiply":
+            result = value_a * value_b
+        elif operation_type == "add":
+            result = value_a + value_b
+        else:
+            raise ValueError(f"Unknown operation type: '{operation_type}'")
+    except ZeroDivisionError:
+        print("Exception Caught: Cannot divide by zero!")
+    except ValueError as e:
+        print(f"Exception Caught: {e}")
+    except TypeError as e:
+        print(f"Exception Caught: {e}")
+    except Exception as e:
+        print(f"An unexpected exception occured: {e}")
+    else:
+        # This block runs ONLY if NO exception was raised in the 'try' block
+        print(f"Operation successful! Result: {result}")
+    finally:
+        print(f"Operation attempt complete.")
+    return result
+
+# --- Demonstration Section for oop_practice.py ---
 if __name__ == "__main__":
+
     print("--- Day 6 Demonstrations ---")
 
     print("\n### Shape Hierarchy and Polymorphism (Problem 1.1) ###")
@@ -541,3 +651,25 @@ if __name__ == "__main__":
         print(f"Caught error in transaction: {e}")
     
     print(f"Check 'bank_transactions.log' file for entries.")
+
+    print("--- Day 7 Demonstrations ---")
+    print("\n### Advanced Error Handling (else/finally - Problem 1.1) ###")
+
+    # Calling perform_risky_operation to demonstrate all branches:
+    perform_risky_operation(10, 2, 'divide') # Successful division
+    perform_risky_operation(10, 0, 'divide') # Division by zero
+    perform_risky_operation(5, 3, 'multiply') # Successful multiplication
+    perform_risky_operation(10, 2, 'subtract') # Invalid operation type
+    # perform_risky_operation("a", 2, 'add') # Invalid input types
+    # perform_risky_operation("a", "b", 'add') # Invalid input types
+
+    account1 = BankAccount("John Cleese", 100)
+    account2 = BankAccount("Freddy Mercury")
+    account3 = BankAccount("Bill Gates", 1050.00)
+
+    accounts_list: list[BankAccount] = [account1, account2, account3]
+
+    save_accounts_to_json(accounts_list, 'accounts_test.json')
+
+    print(load_accounts_from_json('accounts_test.json'))
+    print(load_accounts_from_json('non_existing.json'))

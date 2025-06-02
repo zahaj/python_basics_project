@@ -1,0 +1,14 @@
+[
+    {
+        "account_holder": "John Cleese",
+        "balance": 100.0
+    },
+    {
+        "account_holder": "Freddy Mercury",
+        "balance": 0.0
+    },
+    {
+        "account_holder": "Bill Gates",
+        "balance": 1050.0
+    }
+]
