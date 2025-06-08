@@ -25,7 +25,6 @@ class TestReportGenerator(unittest.TestCase):
         self.assertEqual(result, expected_result)
         mock_fetch_raw_data.assert_called_once()
 
-
     @patch('report_generator_improved._fetch_raw_data')
     def test_generate_report_with_no_data(self, mock_fetch_raw_data):
         mock_fetch_raw_data.return_value = []
@@ -58,4 +57,3 @@ class TestReportGenerator(unittest.TestCase):
         mock_format_data_for_display.assert_called_once()
         mock_format_data_for_display.assert_called_once_with([{"id": 1, "data": "X"}])
         self.assertEqual(result, expected_result)
-        
