@@ -530,10 +530,10 @@ class Vector:
         return math.sqrt(self.x ** 2 + self.y ** 2)
     
     def __str__(self):
-        return f"Vector({self.x}, {self.y}))"
+        return f"Vector({self.x}, {self.y})"
 
     def __repr__(self):
-        return f"Vector(x={self.x}, y={self.y}))"
+        return f"Vector(x={self.x}, y={self.y})"
 
 def perform_risky_operation(value_a: Union[int, float], value_b: Union[int, float], operation_type: str) -> Optional[Union[int, float]]:
     """

@@ -47,7 +47,7 @@ class JSONPlaceholderClient:
         except requests.exceptions.Timeout as errt:
             print(f"Timeout Error: {errt}")
         except requests.exceptions.RequestException as err:
-            print(f"An unexpected error occured: {err}")
+            print(f"An unexpected error occurred: {err}")
         return None
 
     def get_user(self, user_id: int) -> Optional[Dict[str, Any]]:
@@ -92,7 +92,7 @@ class JSONPlaceholderClient:
         except requests.exceptions.ConnectionError as errc:
             print(f"Connection Error: {errc}")
         except requests.exceptions.RequestException as err:
-            print(f"An unexpected error occured fetching user {user_id}: {err}")
+            print(f"An unexpected error occurred fetching user {user_id}: {err}")
         return None
 
     def create_post(self, title: str, body: str, user_id: int) -> Optional[Dict[str, Any]]:
@@ -178,7 +178,7 @@ class JSONPlaceholderClient:
         except requests.exceptions.ConnectionError as errc:
             print(f"Connection Error: {errt}")
         except requests.RequestException as err:
-            print(f"An unexpected errord occured fetching posts for user {user_id}: {err}")
+            print(f"An unexpected errord occurred fetching posts for user {user_id}: {err}")
         return None
 
     def get_comments_for_post(self, post_id: int) -> Optional[List[Dict[str, Any]]]:
@@ -210,7 +210,7 @@ class JSONPlaceholderClient:
         except requests.exceptions.ConnectionError as errc:
             print(f"Connection Error: {errc}")
         except requests.exceptions.RequestException as err:
-            print(f"An error occured: {err}")
+            print(f"An error occurred: {err}")
         return None
   
 

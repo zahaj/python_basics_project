@@ -176,7 +176,7 @@ class TestAccountPersistence(unittest.TestCase):
         ]
         self.expected_json_string = json.dumps(self.expected_json_data, indent=4, ensure_ascii=False)
 
-    @patch('builtins.open', new_callable=mock_open) # Decorator version
+    @patch("builtins.open", new_callable=mock_open) # Decorator version
     def test_save_accounts_writes_correct_json(self, mock_file_open):
         """Test that save_accounts_to_json correctly writes account data as JSON."""
         save_accounts_to_json(self.accounts, self.filename)
@@ -195,7 +195,7 @@ class TestAccountPersistence(unittest.TestCase):
         # Or, compare the formatted string directly if you want to be strict about formatting
         self.assertEqual(written_content, self.expected_json_string)
 
-    @patch('builtins.open', new_callable=mock_open)
+    @patch("builtins.open", new_callable=mock_open)
     def test_load_accounts_reads_correct_json(self, mock_file_open):
         """Test that load_accounts_from_json correctly reads and reconstructs accounts."""
         # Arrange: Set the content that the mock file should 'read'
@@ -215,7 +215,7 @@ class TestAccountPersistence(unittest.TestCase):
         self.assertEqual(loaded_accounts[0], self.accounts[0])
         self.assertEqual(loaded_accounts[1], self.accounts[1])
 
-    @patch('builtins.open', side_effect=FileNotFoundError)
+    @patch("builtins.open", side_effect=FileNotFoundError)
     def test_load_accounts_handles_file_not_found(self, mock_file_open):
         """Test that load_accounts_from_json handles FileNotFoundError."""
         # Capture print output to ensure the warning message is displayed
@@ -231,7 +231,7 @@ class TestAccountPersistence(unittest.TestCase):
         mock_file_open.assert_called_once_with("non_existent.json", 'r', encoding='utf-8')
 
 
-    @patch('builtins.open', new_callable=mock_open)
+    @patch("builtins.open", new_callable=mock_open)
     def test_load_accounts_handles_invalid_json(self, mock_file_open):
         """Test that load_accounts_from_json handles invalid JSON format."""
         # Arrange: Make the mock file return invalid JSON content
@@ -249,7 +249,7 @@ class TestAccountPersistence(unittest.TestCase):
         self.assertIn("ERROR: Invalid JSON format in", captured_output.getvalue())
         mock_file_open.assert_called_once_with(self.filename, 'r', encoding='utf-8')
 
-    @patch('builtins.open', new_callable=mock_open)
+    @patch("builtins.open", new_callable=mock_open)
     def test_load_accounts_handles_invalid_json_entry_format(self, mock_file_open):
         """Test that load_accounts_from_json handles valid JSON but invalid account entry format."""
         # Arrange: JSON is valid, but an account entry is missing a key or has wrong type
@@ -271,7 +271,7 @@ class TestAccountPersistence(unittest.TestCase):
         self.assertIn("WARNING: Skipping invalid account entry from JSON", captured_output.getvalue())
         self.assertIn("Error: 'balance'", captured_output.getvalue()) # Specific error check
 
-    @patch('builtins.open', new_callable=mock_open)
+    @patch("builtins.open", new_callable=mock_open)
     def test_load_accounts_handles_json_not_list(self, mock_file_open):
         """Test that load_accounts_from_json handles JSON data that is not a list."""
         mock_file_open.return_value.read.return_value = json.dumps({"single_account": {"account_holder": "Test", "balance": 50}})

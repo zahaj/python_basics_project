@@ -1,6 +1,7 @@
 import requests
 from config_reader import ConfigReader
-from typing import Any, Optional, Dict 
+from typing import Any, Optional, Dict
+from models import WeatherInfo
 
 class OpenWeatherClient:
     """ A client to interact with the OpenWeatherMap API."""
@@ -16,7 +17,7 @@ class OpenWeatherClient:
         self.base_url = base_url
         self.api_key = config_reader.get_api_key("openweathermap")
 
-    def get_weather(self, city: str, country_code: str = 'PL') -> Optional[Dict[str, Any]]:
+    def get_weather(self, city: str, country_code: str = 'PL') -> Optional[WeatherInfo]:
         """
         Fetches the current weather for a given city.
         
@@ -25,7 +26,7 @@ class OpenWeatherClient:
             country_code (str): The ISO 31166 country code.
         
         Returns:
-            A dictionary with weather data if successful, otherwise None.
+            A WeatherInfo object if successful, otherwise None.
         """
         endpoint = f"{self.base_url}/weather"
     
@@ -40,18 +41,72 @@ class OpenWeatherClient:
             response = requests.get(endpoint, params=params, timeout=10)
             response.raise_for_status()
             weather = response.json()
-            print(weather)
-            return weather
+
+            return WeatherInfo(
+                city=weather['name'],
+                temperature=weather['main']['temp'],
+                feels_like=weather['main']['feels_like'],
+                description=weather['weather'][0]['description'],
+                icon_code=weather['weather'][0]['icon']
+            )
+            '''
+            The example of successfully fetched weather dictionary:
+            {
+                'coord': {'lon': 17.0333, 'lat': 51.1},
+                'weather': [
+                    {
+                        'id': 803,
+                        'main': 'Clouds',
+                        'description': 'broken clouds',
+                        'icon': '04d'
+                    }
+                ],
+                'base': 'stations',
+                'main': {
+                            'temp': 16.52,
+                            'feels_like': 16.53,
+                            'temp_min': 16.1,
+                            'temp_max': 17,
+                            'pressure': 1020,
+                            'humidity': 88,
+                            'sea_level': 1020,
+                            'grnd_level': 1004
+                },
+                'visibility': 10000,
+                'wind': {'speed': 9.77, 'deg': 300},
+                'clouds': {'all': 75},
+                'dt': 1750061420,
+                'sys': {
+                            'type': 2,
+                            'id': 2103126,
+                            'country': 'PL',
+                            'sunrise': 1750041380,
+                            'sunset': 1750100934
+                },
+                'timezone': 7200,
+                'id': 3081368,
+                'name': 'Wrocław',
+                'cod': 200
+            }
+            '''
+            # print(weather)
         except requests.exceptions.HTTPError as errh:
             if errh.response.status_code == 404:
                 print(f"Error: City '{city}' not found.")
             else:
                 print(f"Http Error: {errh}")
-        except requests.exceptions.RequestException as err:
+        except (requests.exceptions.RequestException, KeyError) as err:
             print(f"An unexpected request error occurred: {err}")
+        
         return None
 
+if __name__ == "__main__":
 
+    config = ConfigReader()
+    weather_client = OpenWeatherClient(config)
+    wroclaw_weather = weather_client.get_weather("Wrocław")
+    print(wroclaw_weather.city, wroclaw_weather.feels_like, wroclaw_weather.temperature)
+"""
 ### Demonstration ###
 if __name__ == "__main__":
 
@@ -87,3 +142,4 @@ if __name__ == "__main__":
     except KeyError as e:
         print(f"\nDEMO ERROR: {e}")
         print("Please ensure your 'config.ini' has the [openweathermap] section with an 'api_key'.")
+"""

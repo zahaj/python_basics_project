@@ -8,7 +8,7 @@ class TestReportGenerator(unittest.TestCase):
     def setUp(self):
         self.generator = ReportGenerator()
 
-    @patch('report_generator_improved._fetch_raw_data')
+    @patch("report_generator_improved._fetch_raw_data")
     def test_generate_report_with_user_data(self, mock_fetch_raw_data):
         mock_fetch_raw_data.return_value = [
             {"id": 10, "name": "Eva"},
@@ -25,7 +25,7 @@ class TestReportGenerator(unittest.TestCase):
         self.assertEqual(result, expected_result)
         mock_fetch_raw_data.assert_called_once()
 
-    @patch('report_generator_improved._fetch_raw_data')
+    @patch("report_generator_improved._fetch_raw_data")
     def test_generate_report_with_no_data(self, mock_fetch_raw_data):
         mock_fetch_raw_data.return_value = []
         result = self.generator.generate_report("id")
@@ -37,14 +37,14 @@ class TestReportGenerator(unittest.TestCase):
         self.assertEqual(result, expected_result)
         mock_fetch_raw_data.assert_called_once_with("id")
 
-    @patch('report_generator_improved._fetch_raw_data')
+    @patch("report_generator_improved._fetch_raw_data")
     def test_generate_report_raises_on_fetch_error(self, mock_fetch_raw_data):
         mock_fetch_raw_data.side_effect = ValueError("Simulated fetch error")
         with self.assertRaises(ValueError):
             self.generator.generate_report("id")
 
-    @patch('report_generator_improved._format_data_for_display')
-    @patch('report_generator_improved._fetch_raw_data')
+    @patch("report_generator_improved._format_data_for_display")
+    @patch("report_generator_improved._fetch_raw_data")
     def test_generate_report_uses_formatter_correctly(self, mock_fetch_raw_data, mock_format_data_for_display):
         mock_fetch_raw_data.return_value = [{"id": 1, "data": "X"}]
         mock_format_data_for_display.return_value= "MOCKED FORMATTED STRING"
