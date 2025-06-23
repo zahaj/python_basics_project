@@ -1,5 +1,6 @@
 
 from typing import Optional
+import concurrent.futures
 
 from api_interactions import JSONPlaceholderClient
 from weather_client import OpenWeatherClient, ConfigReader
@@ -11,7 +12,7 @@ class DailyBriefing:
     An application class that orchestrates multiple clients to generate
     a user's daily briefing.
     """
-    
+
     def __init__(self, api_client: JSONPlaceholderClient, weather_client: OpenWeatherClient):
         """
         Initializes the application with its dependencies (the clients).
@@ -22,24 +23,42 @@ class DailyBriefing:
     
     def generate_briefing(self, user_id: int, city: str) -> Optional[str]:
         """
-        Generates a daily briefing string by fetching data sequentially.
+        Generates a daily briefing string by fetching data concurrently.
         """      
+
+
         print(f"\n--- Generating daily briefing for user {user_id} in {city} ---")
-        # Step 1: Get the user's data. This is critical.
-        user_info = self.api_client.get_user(user_id)
+        
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            user_future = executor.submit(self.api_client.get_user, user_id)
+            weather_future = executor.submit(self.weather_client.get_weather, city)
+            posts_future = executor.submit(self.api_client.get_posts_by_user, user_id)
+
+        try:
+            user_info = user_future.result()
+        except Exception as e:
+            print(f"Error fetching user data: {e}")
+            user_info = None
+        
         if not user_info:
             return "Could not retrieve user data. Aborting briefing."
-        
+
         user_name = user_info.get("name", "there")
 
-        # Step 2: Get the user's posts. This is optional.
-        user_posts = self.api_client.get_posts_by_user(user_id)
-        latest_post_title = user_posts[0].get("title") if user_posts else None
+        try:
+            weather_info = weather_future.result()
+        except Exception as e:
+            print(f"Error fetching weather: {e}")
+            weather_info = None
+        
+        try:        
+            user_posts = posts_future.result()
+            latest_post_title = user_posts[0].get("title") if user_posts else None
+        except Exception as e:
+            print(f"Error fetching posts: {e}")
+            latest_post_title = None
 
-        # Step 3: Get weather data. This is also optional.
-        weather_info = self.weather_client.get_weather(city)
-
-        # Step 4: Assemble the final briefing string.
         briefing = f"Good morning, {user_name}! "
         if weather_info:
             briefing += f"The current weather in {weather_info.city} is {weather_info.description}. It's {weather_info.temperature}°C. "
