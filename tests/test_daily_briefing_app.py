@@ -1,10 +1,10 @@
 import unittest
 from unittest.mock import MagicMock, patch, call
 
-from api_interactions import JSONPlaceholderClient
-from weather_client import OpenWeatherClient
-from models import WeatherInfo
-from daily_briefing_app import DailyBriefing
+from daily_briefing.api_interactions import JSONPlaceholderClient
+from daily_briefing.weather_client import OpenWeatherClient
+from daily_briefing.models import WeatherInfo
+from daily_briefing.daily_briefing_app import DailyBriefing
 
 class TestDailyBriefing(unittest.TestCase):
     """Test suite for testing DailyBriefing class."""
@@ -26,7 +26,7 @@ class TestDailyBriefing(unittest.TestCase):
         )
 
     # We now patch ThreadPoolExecutor where it is used.
-    @patch('daily_briefing_app.concurrent.futures.ThreadPoolExecutor')
+    @patch('daily_briefing.daily_briefing_app.concurrent.futures.ThreadPoolExecutor')
     def test_generate_briefing_success_all_data(self, mock_executor_class):
         """Test the successful generation of a briefing with all data available."""
         # Arrange: Configure the return values of the mock clients' methods.

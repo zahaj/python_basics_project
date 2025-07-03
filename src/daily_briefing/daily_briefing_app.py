@@ -2,10 +2,10 @@
 from typing import Optional
 import concurrent.futures
 
-from api_interactions import JSONPlaceholderClient
-from weather_client import OpenWeatherClient, ConfigReader
+from .api_interactions import JSONPlaceholderClient
+from .weather_client import OpenWeatherClient, ConfigReader
 # from config_reader import ConfigReader
-from models import WeatherInfo
+from .models import WeatherInfo
 
 class DailyBriefing:
     """

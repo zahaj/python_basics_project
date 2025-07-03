@@ -2,3 +2,8 @@
 __pycache__/
 python_basics_project_AI/
 config.ini
+
+# Build and distribution artifacts
+/dist
+/build
+*.egg-info

@@ -2,6 +2,21 @@ from dataclasses import dataclass
 from typing import Union
 import math
 
+# In models.py
+from pydantic import BaseModel
+from typing import Optional
+
+# ... your other dataclasses ...
+
+class BriefingResponse(BaseModel):
+    """Pydantic model for the briefing API response."""
+    user_name: str
+    city: str
+    weather_summary: Optional[str] = None
+    latest_post_title: Optional[str] = None
+    error_message: Optional[str] = None
+
+
 class Shape:
     """This is a base class for different shapes."""
 

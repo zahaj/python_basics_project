@@ -1,7 +1,8 @@
 import requests
-from config_reader import ConfigReader
 from typing import Any, Optional, Dict
-from models import WeatherInfo
+
+from .config_reader import ConfigReader
+from .models import WeatherInfo
 
 class OpenWeatherClient:
     """ A client to interact with the OpenWeatherMap API."""

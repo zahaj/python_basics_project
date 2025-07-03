@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 import requests.exceptions
 
-from api_interactions import JSONPlaceholderClient
+from daily_briefing.api_interactions import JSONPlaceholderClient
 
 class TestJSONPlaceholderClient(unittest.TestCase):
     """Test suite for JSONPlaceholderClient class."""
@@ -12,7 +12,7 @@ class TestJSONPlaceholderClient(unittest.TestCase):
 
         self.client = JSONPlaceholderClient()
     
-    @patch("api_interactions.requests.get")
+    @patch("daily_briefing.api_interactions.requests.get")
     def test_get_users_success(self, mock_requests_get):
         """Test successful fetching of all users."""
 
@@ -36,7 +36,7 @@ class TestJSONPlaceholderClient(unittest.TestCase):
         mock_requests_get.assert_called_once_with(f"{self.client.base_url}/users", timeout=5)
         self.assertEqual(result, users)
 
-    @patch("api_interactions.requests.get")
+    @patch("daily_briefing.api_interactions.requests.get")
     def test_get_users_failure(self, mock_requests_get):
         """Test failure when fetching all users."""
 
@@ -52,7 +52,7 @@ class TestJSONPlaceholderClient(unittest.TestCase):
         mock_requests_get.assert_called_once_with("https://jsonplaceholder.typicode.com/users", timeout=5)
         self.assertIsNone(result)
 
-    @patch("api_interactions.requests.get")
+    @patch("daily_briefing.api_interactions.requests.get")
     def test_get_posts_by_user_success(self, mock_requests_get):
         """Test successful fetching of posts for a specific user."""
 
@@ -76,7 +76,7 @@ class TestJSONPlaceholderClient(unittest.TestCase):
         mock_requests_get.assert_called_once_with(f"{self.client.base_url}/posts", params=expected_params, timeout=5)
         self.assertEqual(result, posts)
 
-    @patch("api_interactions.requests.post")
+    @patch("daily_briefing.api_interactions.requests.post")
     def test_create_post_success(self, mock_requests_post):
         """Test successful creation of a new post."""
 
