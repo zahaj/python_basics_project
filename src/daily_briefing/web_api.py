@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-
 from fastapi import HTTPException
+
 from .daily_briefing_app import DailyBriefing
 from .api_interactions import JSONPlaceholderClient
 from .weather_client import OpenWeatherClient

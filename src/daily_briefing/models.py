@@ -6,8 +6,19 @@ import math
 from pydantic import BaseModel
 from typing import Optional
 
-# ... your other dataclasses ...
-
+@dataclass(frozen=True)
+class WeatherInfo:
+    """
+    A dataclass to hold structured weather information.
+    'frozen=True' makes instances immutable, which is good practice for data
+    objects that shouldn't be changed after creation.
+    """
+    city: str
+    temperature: float
+    feels_like: float
+    description: str
+    icon_code: str # e.g., '01d' for clear sky day
+    
 class BriefingResponse(BaseModel):
     """Pydantic model for the briefing API response."""
     user_name: str
@@ -118,16 +129,3 @@ class Vector:
 
 # vector1 = Vector(1.6, -0.2)
 # print(vector1, vector1.__repr__())
-
-@dataclass(frozen=True)
-class WeatherInfo:
-    """
-    A dataclass to hold structured weather information.
-    'frozen=True' makes instances immutable, which is good practice for data
-    objects that shouldn't be changed after creation.
-    """
-    city: str
-    temperature: float
-    feels_like: float
-    description: str
-    icon_code: str # e.g., '01d' for clear sky day
