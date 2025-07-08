@@ -1,0 +1,43 @@
+services:
+  api:
+    # ... configuration for our FastAPI app container ...
+    # 'build: .' tells Docker Compose to look for a Dockerfile in the
+    # current directory and build it to create the image for this service.
+    build: .
+    container_name: briefing-container
+    # 'ports' maps the host machine's port 8000 to the container's port 8000.
+    # This is how we access the API from our browser.
+    ports:
+      - "8000:8000"
+    # 'environment' sets environment variables inside the container. This is the
+    # modern way to pass configuration to a containerized application.
+    environment:
+      - WEATHER_API_KEY=ABCDEFG # This can be overridden
+    # 'depends_on' ensures that the 'db' service is started *before*
+    # this 'api' service starts. This prevents the API from trying to
+    # connect to a database that isn't ready yet.
+    depends_on:
+      - db
+  # The PostgreSQL database service
+  db:
+    # ... configuration for our PostgreSQL database container ...
+    # 'image' pulls a pre-built image from Docker Hub. We don't need to build it.
+    image: postgres:15-alpine
+    container_name: briefing-db
+    # PostgreSQL requires these environment variables to initialize the database.
+    environment:
+      - POSTGRES_USER=briefing_user
+      - POSTGRES_PASSWORD=a_secure_password
+      - POSTGRES_DB=briefing_db
+    # 'volumes' makes data persistent. It maps the named volume 'postgres_data'
+    # to the directory inside the container where PostgreSQL stores its data.
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # It's good practice to map the PostgreSQL port in case you want to connect
+    # to it directly with a database tool.
+    ports:
+      - "5432:5432"
+
+# 'volumes' at the top level declares the named volume to be managed by Docker.
+volumes:
+  postgres_data:

@@ -228,14 +228,24 @@ if __name__ == "__main__":
     # Fetch posts for a specific user. Print the titles of the first few posts.
     print("\n--- Posts for user with ID = 9: ---\n")
     posts_user_id_9 = client.get_posts_by_user(9)
-    [print(f"- Post id: {posts_user_id_9[i]["id"]}, title: {posts_user_id_9[i]["title"]}") for i in range(5)]
+    if posts_user_id_9:
+        for post in posts_user_id_9[:5]:
+            print(f"- Post id: {post['id']}, title: {post['title']}")
+
     print("\n--- Posts for user with ID = 999: ---\n")
     posts_user_id_999 = client.get_posts_by_user(999)
-    #[print(f"- Post id: {posts_user_id_999[i]["id"]}, title: {posts_user_id_999[i]["title"]}") for i in range(5)]
+    if posts_user_id_999:
+        for post in posts_user_id_999[:5]:
+            print(f"- Post id: {post['id']}, title: {post['title']}")
+    else:
+        print("No posts found for user ID 999.")
 
     # Fetch comments for a specific post. Print the email and body of the first few comments.
     comments_post_id_8 = client.get_comments_for_post(8)
     print("\n--- Comments for post with ID = 8: ---\n")
-    [print(f"- Comment id: {comments_post_id_8[i]["id"]}\nemail: {comments_post_id_8[i]["email"]}\nbody: {comments_post_id_8[i]["body"]}") for i in range(5)]
+    if comments_post_id_8:
+        for comment in comments_post_id_8[:5]:
+            print(f"- Comment id: {comment['id']}\n  email: {comment['email']}\n  body: {comment['body']}\n")
+
     comments_post_id_999 = client.get_comments_for_post(999)
     print(f"\nComments for post with ID = 999: {comments_post_id_999}")

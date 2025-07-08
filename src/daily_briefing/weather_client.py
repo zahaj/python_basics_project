@@ -37,7 +37,7 @@ class OpenWeatherClient:
             "units": "metric" # to get Celsius temperatures
         }
 
-        print(f"Fetching weather for '{params["q"]}' from {endpoint}")
+        print(f"Fetching weather for {params['q']} from {endpoint}")
         try:
             response = requests.get(endpoint, params=params, timeout=10)
             response.raise_for_status()
