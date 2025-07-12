@@ -22,7 +22,9 @@ dependencies = [
     "uvicorn",
     "requests",
     "typer",
-    "rich"
+    "rich",
+    "sqlalchemy",
+    "psycopg2-binary"
 ]
 
 [project.urls]

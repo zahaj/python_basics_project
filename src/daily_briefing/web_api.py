@@ -6,12 +6,20 @@ from .api_interactions import JSONPlaceholderClient
 from .weather_client import OpenWeatherClient
 from .config_reader import ConfigReader
 from .models import BriefingResponse
+from .database import SessionLocal, create_db_and_tables, BriefingLog
 
 api_app = FastAPI(
     title="Daily Briefing API",
     description="An API to generate daily briefings for users.",
     version="0.1.0"
 )
+
+# --- Application Startup Event ---
+# This is a FastAPI event handler that runs once when the app starts.
+# It's the perfect place to create our database tables.
+@api_app.on_event("startup")
+def on_startup():
+    create_db_and_tables()
 
 @api_app.get("/briefing/{user_id}", response_model=BriefingResponse)
 def get_user_briefing(user_id: int, city: str):
@@ -31,6 +39,14 @@ def get_user_briefing(user_id: int, city: str):
         if not user_data:
             # For an API, we raise a proper HTTP error
             raise HTTPException(status_code=404, detail=f"User with ID {user_id} not found.")
+        
+        # --- Database Logging Logic ---
+        # A 'with' block ensures the session is properly closed.
+        with SessionLocal() as db_session:
+            log_entry = BriefingLog(user_id=user_id, city=city)
+            db_session.add(log_entry)
+            db_session.commit()
+
         weather_info = app.weather_client.get_weather(city)
         posts = app.api_client.get_posts_by_user(user_id)
         weather_summary_text = (
