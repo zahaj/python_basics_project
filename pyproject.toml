@@ -27,6 +27,12 @@ dependencies = [
     "psycopg2-binary"
 ]
 
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "httpx",
+]
+
 [project.urls]
 "Homepage" = "https://github.com/zahaj/python_basics_project"
 "Bug Tracker" = "https://github.com/zahaj/python_basics_project/issues"
