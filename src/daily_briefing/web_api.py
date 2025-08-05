@@ -1,5 +1,5 @@
-from fastapi import FastAPI
-from fastapi import HTTPException
+from fastapi import FastAPI, HTTPException, Depends
+from sqlalchemy.orm import Session
 
 from .daily_briefing_app import DailyBriefing
 from .api_interactions import JSONPlaceholderClient
@@ -21,8 +21,22 @@ api_app = FastAPI(
 def on_startup():
     create_db_and_tables()
 
+# --- Dependency Function ---
+# This generator function creates a database session for a single request,
+# yields it to the endpoint, and ensures it's closed afterward.
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 @api_app.get("/briefing/{user_id}", response_model=BriefingResponse)
-def get_user_briefing(user_id: int, city: str):
+def get_user_briefing(
+    user_id: int,
+    city: str,
+    db: Session = Depends(get_db)
+):
     """
     Generates a daily briefing for a given user ID and city.
     """
@@ -40,12 +54,10 @@ def get_user_briefing(user_id: int, city: str):
             # For an API, we raise a proper HTTP error
             raise HTTPException(status_code=404, detail=f"User with ID {user_id} not found.")
         
-        # --- Database Logging Logic ---
-        # A 'with' block ensures the session is properly closed.
-        with SessionLocal() as db_session:
-            log_entry = BriefingLog(user_id=user_id, city=city)
-            db_session.add(log_entry)
-            db_session.commit()
+        # The endpoint now uses the injected 'db' session directly.        
+        log_entry = BriefingLog(user_id=user_id, city=city)
+        db.add(log_entry)
+        db.commit()
 
         weather_info = app.weather_client.get_weather(city)
         posts = app.api_client.get_posts_by_user(user_id)
