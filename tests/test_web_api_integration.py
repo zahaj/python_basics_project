@@ -9,7 +9,7 @@ import pytest
 
 from daily_briefing.database import SessionLocal, BriefingLog
 
-def test_get_briefing_logs_to_db(db_engine):
+def test_get_briefing_logs_to_db(setup_test_database):
     """
     Integration test: makes a real HTTP request to the running API
     and verifies that a log entry is created in the database.
