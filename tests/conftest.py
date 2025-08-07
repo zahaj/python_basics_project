@@ -5,14 +5,13 @@ import os
 # modules are imported, especially 'database.py'.
 os.environ['DB_HOST'] = 'localhost'
 
-from daily_briefing.database import engine, Base, SessionLocal
+from daily_briefing.database import engine, Base
 
-@pytest.fixture(scope="session", autouse=True)
-def setup_test_database():
+@pytest.fixture(scope="session")
+def db_session_setup():
     """
-    A session-scoped fixture to set up the database once for all tests.
-    The 'autouse=True' means this fixture will be automatically used for
-    every test, so you don't have to add it as an argument everywhere.
+    A session-scoped fixture to set up the database once for all tests
+    that need it.
     """
 
     # Drop all tables to ensure a clean state

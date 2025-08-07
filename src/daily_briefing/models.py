@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from typing import Union
 import math
 
-# In models.py
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
+from datetime import datetime
 
 @dataclass(frozen=True)
 class WeatherInfo:
@@ -27,6 +27,19 @@ class BriefingResponse(BaseModel):
     latest_post_title: Optional[str] = None
     error_message: Optional[str] = None
 
+# SQLAlchemy models are your database layer — they represent data in the database.
+# Pydantic models are your API/data validation layer — they represent data you send
+# or receive via FastAPI (or similar frameworks).
+# You don’t want to expose raw database models directly to users, so you convert
+# SQLAlchemy models → Pydantic models for API responses.
+
+class BriefingLog(BaseModel):
+    """Pydantic schema for reading log entries from the API."""
+    id: int
+    user_id: int
+    city: str
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True) # This allows the Pydantic model to be created from an ORM object
 
 class Shape:
     """This is a base class for different shapes."""
