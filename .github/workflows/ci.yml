@@ -1,0 +1,55 @@
+name: Run Python Tests
+
+on:
+  push:
+    branches:
+      [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        # Provide the same env vars as in your docker-compose.yml
+        env:
+          POSTGRES_USER: briefing_user
+          POSTGRES_PASSWORD: a_secure_password
+          POSTGRES_DB: briefing_db_test # Use a different DB name for tests
+        # Healthcheck to ensure the DB is ready before tests run
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    # Step 1: Check out the repository's code onto the runner.
+    - name: Check out repository code
+      uses: actions/checkout@v4
+
+    # Step 2: Set up a specific version of Python.
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    # Step 3: Install project dependencies.
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[test]"
+
+    # Step 4: Run the tests. This is the most critical step.
+    - name: Run tests with pytest
+      # Provide environment variables that the tests need to connect to the postgres service.
+      # The service is available on 'localhost' with the port mapped automatically by Actions.
+      env:
+        DB_HOST: localhost
+        POSTGRES_USER: briefing_user
+        POSTGRES_PASSWORD: a_secure_password
+        POSTGRES_DB: briefing_db_test
+        WEATHER_API_KEY: "dummy_key_for_ci" # Provide a dummy key for any tests that might need it.
+      run: pytest
