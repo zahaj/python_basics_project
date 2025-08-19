@@ -5,7 +5,7 @@ from io import StringIO # To capture print output
 from unittest.mock import patch, mock_open
 
 # Import all necessary classes from oop_practice_modified.py file
-from oop_practice_modified import(
+from daily_briefing.oop_practice_modified import(
     Dog,
     Vector,
     save_accounts_to_json,
@@ -286,7 +286,6 @@ class TestAccountPersistence(unittest.TestCase):
         self.assertEqual(loaded_accounts, [])
         self.assertIn("WARNING: JSON file", captured_output.getvalue())
         self.assertIn("does not contain a list", captured_output.getvalue())
-
 
 # Standard boilerplate to run tests when the script is executed directly
 if __name__ == '__main__':
