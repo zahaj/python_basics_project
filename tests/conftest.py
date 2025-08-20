@@ -1,14 +1,15 @@
 import pytest
 import os
 
-# This line MUST run before any of your application's
-# modules are imported, especially 'database.py'.
-if os.getenv("CI"):  # GitHub sets this automatically in Actions
-    os.environ["DB_HOST"] = "postgres"
-else:
-    os.environ.setdefault("DB_HOST", "localhost")
-
 from daily_briefing.database import engine, Base
+
+if "DB_HOST" not in os.environ:
+    if os.getenv("CI"):  # GitHub Actions sets CI=true
+        os.environ["DB_HOST"] = "postgres"
+    else:
+        os.environ["DB_HOST"] = "localhost"
+
+print(f"[conftest] Using DB_HOST={os.environ['DB_HOST']}")
 
 @pytest.fixture(scope="session")
 def db_session_setup():
