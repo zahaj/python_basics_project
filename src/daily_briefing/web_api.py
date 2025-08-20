@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, status
 from sqlalchemy.orm import Session
 
 from .daily_briefing_app import DailyBriefing
@@ -7,12 +7,25 @@ from .weather_client import OpenWeatherClient
 from .config_reader import ConfigReader
 from .models import BriefingResponse, BriefingLog as BriefingLogSchema # Use an alias to avoid name clashes
 from .database import SessionLocal, create_db_and_tables, BriefingLog  as BriefingLogModel # The SQLAlchemy model
+from fastapi.security import OAuth2PasswordRequestForm
+from . import auth # Import the new auth module
 
 api_app = FastAPI(
     title="Daily Briefing API",
     description="An API to generate daily briefings for users.",
     version="0.1.0"
 )
+
+# --- Fake User Database (for demonstration) ---
+# In a real app, this would be a database table.
+# The password hash can be generated with: auth.get_password_hash("testpassword")
+fake_users_db = {
+    "testuser": {
+        "username": "testuser",
+        "hashed_password": "$2b$12$oK1WqVEz3K0xgXVFj9s9cOsoZU1wy9/nk/24LeQVhpQImJuFn2LiG" #"$2b$12$EixZaYVK1fsbw1Z2b2I.7u2zN3b3j3b.7u.EixZaYVK1fsbw1Z2b2"
+    }
+}
+
 
 # --- Application Startup Event ---
 # This is a FastAPI event handler that runs once when the app starts.
@@ -77,9 +90,21 @@ def get_user_briefing(
         raise HTTPException(status_code=500, detail="Server configuration error: config.ini not found.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected server error occurred: {e}")
+
+@api_app.post("/token")
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     
+    user = fake_users_db.get(form_data.username)
+    if not user or not auth.verify_password(form_data.password, user["hashed_password"]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+        )
+    access_token = auth.create_access_token(data={"sub": user["username"]})
+    return {"access_token": access_token, "token_type": "bearer"}
+
 @api_app.get("/logs", response_model=list[BriefingLogSchema])
-def get_all_logs(db: Session = Depends(get_db)):
+def get_all_logs(db: Session = Depends(get_db), current_user: dict = Depends(auth.get_current_user)):
     """Retrieve all briefing log entries from the database."""
     logs = db.query(BriefingLogModel).all()
     return logs
@@ -95,7 +120,7 @@ def get_log_by_id(log_id: int, db: Session = Depends(get_db)):
 # The status_code=200 specifies the HTTP status code that the API should return
 # when the DELETE operation is successful.
 @api_app.delete("/logs/{log_id}", status_code=200)
-def delete_log_by_id(log_id: int, db: Session = Depends(get_db)):
+def delete_log_by_id(log_id: int, db: Session = Depends(get_db), current_user: dict = Depends(auth.get_current_user)):
     log_to_delete = db.query(BriefingLogModel).filter(BriefingLogModel.id == log_id).first()
     if not log_to_delete:
         raise HTTPException(status_code=404, detail="A log with ID {log_id} not found")
