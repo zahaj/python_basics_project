@@ -7,13 +7,14 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 # --- Database Connection Setup ---
 
 # Construct the database URL from environment variables.
-DB_USER = os.getenv("POSTGRES_USER", "briefing_user")
-DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "a_secure_password")
-DB_NAME = os.getenv("POSTGRES_DB", "briefing_db")
+DB_USER = os.getenv("DB_USER", "briefing_user")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "a_secure_password")
+DB_NAME = os.getenv("DB_NAME", "briefing_db_test")
+
 # The hostname 'db' is for container-to-container communication.
 # For tests running on the host, we'll override this with 'localhost'.
-DB_HOST = os.getenv("DB_HOST", "db")
-DB_PORT = "5432"
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = os.getenv("DB_PORT", "5432")
 
 # The standard database URL format is postgresql://user:password@host/dbname.
 DATABASE_URL = (
