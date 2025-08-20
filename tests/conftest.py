@@ -3,7 +3,10 @@ import os
 
 # This line MUST run before any of your application's
 # modules are imported, especially 'database.py'.
-os.environ['DB_HOST'] = 'localhost'
+if os.getenv("CI"):  # GitHub sets this automatically in Actions
+    os.environ["DB_HOST"] = "postgres"
+else:
+    os.environ.setdefault("DB_HOST", "localhost")
 
 from daily_briefing.database import engine, Base
 
