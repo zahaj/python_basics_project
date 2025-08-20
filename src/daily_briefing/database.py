@@ -10,7 +10,9 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 DB_USER = os.getenv("POSTGRES_USER", "briefing_user")
 DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "a_secure_password")
 DB_NAME = os.getenv("POSTGRES_DB", "briefing_db")
-DB_HOST = "db"
+# The hostname 'db' is for container-to-container communication.
+# For tests running on the host, we'll override this with 'localhost'.
+DB_HOST = os.getenv("DB_HOST", "db")
 DB_PORT = "5432"
 
 # The standard database URL format is postgresql://user:password@host/dbname.
@@ -30,6 +32,12 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 # --- SQLAlchemy Model Definition ---
+
+# A SQLAlchemy model is a Python class that represents a table in a database.
+# Each class = a table.
+# Each class attribute = a column in that table.
+# Each instance = a row in the table.
+# This is typically called an ORM model (Object-Relational Mapping), because you're mapping Python objects to database rows.
 
 class BriefingLog(Base):
     """SQLAlchemy model for the briefing_logs table."""

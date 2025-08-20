@@ -26,30 +26,39 @@ jobs:
           --health-retries 5
 
     steps:
-    # Step 1: Check out the repository's code onto the runner.
-    - name: Check out repository code
-      uses: actions/checkout@v4
+      # Step 1: Check out the repository's code onto the runner.
+      - name: Check out repository code
+        uses: actions/checkout@v4
 
-    # Step 2: Set up a specific version of Python.
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.11"
+      # Step 2: Set up a specific version of Python.
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-    # Step 3: Install project dependencies.
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e ".[test]"
+      # Step 3: Install project dependencies.
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+      # --- ADD THIS NEW DEBUGGING STEP ---
+      - name: Debug Environment Variables
+        run: |
+          echo "--- Printing all environment variables ---"
+          env
+          echo "--- Specifically checking DB_HOST ---"
+          echo "The DB_HOST is set to: $DB_HOST"
+          echo "-------------------------------------"
+      # ------------------------------------
 
-    # Step 4: Run the tests. This is the most critical step.
-    - name: Run tests with pytest
-      # Provide environment variables that the tests need to connect to the postgres service.
-      # The service is available on 'localhost' with the port mapped automatically by Actions.
-      env:
-        DB_HOST: localhost
-        POSTGRES_USER: briefing_user
-        POSTGRES_PASSWORD: a_secure_password
-        POSTGRES_DB: briefing_db_test
-        WEATHER_API_KEY: "dummy_key_for_ci" # Provide a dummy key for any tests that might need it.
-      run: pytest
+      # Step 4: Run the tests. This is the most critical step.
+      - name: Run tests with pytest
+        # Provide environment variables that the tests need to connect to the postgres service.
+        # The service is available on 'localhost' with the port mapped automatically by Actions.
+        env:
+          DB_HOST: localhost
+          POSTGRES_USER: briefing_user
+          POSTGRES_PASSWORD: a_secure_password
+          POSTGRES_DB: briefing_db_test
+          WEATHER_API_KEY: "dummy_key_for_ci" # Provide a dummy key for any tests that might need it.
+        run: pytest

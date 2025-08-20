@@ -25,11 +25,7 @@ class DailyBriefing:
         """
         Generates a daily briefing string by fetching data concurrently.
         """      
-
-
         print(f"\n--- Generating daily briefing for user {user_id} in {city} ---")
-        
-
         with concurrent.futures.ThreadPoolExecutor() as executor:
             user_future = executor.submit(self.api_client.get_user, user_id)
             weather_future = executor.submit(self.weather_client.get_weather, city)

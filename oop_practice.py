@@ -21,7 +21,7 @@ dog = Dog()
 
 # Access and print attributes
 print(f"Dog's name: {dog.name}")
-print(f"Dog's breed: {dog.name}")
+print(f"Dog's breed: {dog.breed}")
 
 # Call the Dog class method
 dog.bark()
