@@ -26,4 +26,4 @@ EXPOSE 8000
 
 # Define the command to run when a container is started from this image.
 # This runs the uvicorn server. "0.0.0.0" makes it accessible from outside the container.
-CMD ["uvicorn", "daily_briefing.web_api:api_app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "daily_briefing.web_api:api_app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "debug"]
