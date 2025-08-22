@@ -22,7 +22,8 @@ services:
     # this 'api' service starts. This prevents the API from trying to
     # connect to a database that isn't ready yet.
     depends_on:
-      - db
+      db:
+        condition: service_healthy
   # The PostgreSQL database service
   db:
     # ... configuration for our PostgreSQL database container ...
@@ -42,6 +43,11 @@ services:
     # to it directly with a database tool.
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U briefing_user -d briefing_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 # 'volumes' at the top level declares the named volume to be managed by Docker.
 volumes:
