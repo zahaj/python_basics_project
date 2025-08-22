@@ -12,11 +12,11 @@ services:
     # 'environment' sets environment variables inside the container. This is the
     # modern way to pass configuration to a containerized application.
     environment:
-      - POSTGRES_USER=briefing_user
-      - POSTGRES_PASSWORD=a_secure_password
-      - POSTGRES_DB=briefing_db
-      - DB_HOST=db # The hostname for the API to connect to the DB
-      - WEATHER_API_KEY=${WEATHER_API_KEY} # Optional: for local development
+      - POSTGRES_USER=${POSTGRES_USER:-briefing_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-a_secure_password}
+      - POSTGRES_DB=${POSTGRES_DB:-briefing_db}
+      - DB_HOST=db
+      - WEATHER_API_KEY=${WEATHER_API_KEY}
     # ----------------------
     # 'depends_on' ensures that the 'db' service is started *before*
     # this 'api' service starts. This prevents the API from trying to
@@ -32,9 +32,9 @@ services:
     container_name: briefing-db
     # PostgreSQL requires these environment variables to initialize the database.
     environment:
-      - POSTGRES_USER=briefing_user
-      - POSTGRES_PASSWORD=a_secure_password
-      - POSTGRES_DB=briefing_db
+      - POSTGRES_USER=${POSTGRES_USER:-briefing_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-a_secure_password}
+      - POSTGRES_DB=${POSTGRES_DB:-briefing_db}
     # 'volumes' makes data persistent. It maps the named volume 'postgres_data'
     # to the directory inside the container where PostgreSQL stores its data.
     volumes:
@@ -44,7 +44,7 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U briefing_user -d briefing_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-briefing_user} -d ${POSTGRES_DB:-briefing_db}"]
       interval: 5s
       timeout: 5s
       retries: 5

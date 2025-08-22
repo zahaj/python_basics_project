@@ -14,12 +14,15 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v4
 
-      - name: Build and run the application for testing
+      - name: Build and run Docker Compose services
         # We pass an environment variable to the 'docker compose' command.
         # This will override the POSTGRES_DB value in docker-compose.yml
         # for this specific run, causing it to create the test database.
         env:
-          POSTGRES_DB: briefing_db_test
+          POSTGRES_USER: briefing_user
+          POSTGRES_PASSWORD: a_secure_password
+          POSTGRES_DB: briefing_db_test   # override for CI
+          DB_HOST: db
         run: docker compose up --build -d
 
       - name: Wait for API to be healthy
@@ -40,6 +43,12 @@ jobs:
         # exposed by Docker Compose on localhost.
         # The tests in conftest.py are hardcoded to connect to the
         # 'briefing_db_test' database, which was just created.
+        env:  # same env vars for tests
+          POSTGRES_USER: briefing_user
+          POSTGRES_PASSWORD: a_secure_password
+          POSTGRES_DB: briefing_db_test
+          DB_HOST: localhost
+          DB_PORT: 5432
         run: pytest
 
       - name: Show container logs on failure

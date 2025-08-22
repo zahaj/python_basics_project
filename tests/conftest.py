@@ -2,12 +2,11 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from daily_briefing.database import Base
+from daily_briefing.database import Base, DATABASE_URL
 
 # For tests, we'll connect to a separate test database
 # The environment variables will be set by the CI runner
-TEST_DATABASE_URL = "postgresql+psycopg2://briefing_user:a_secure_password@localhost:5432/briefing_db_test"
-engine = create_engine(TEST_DATABASE_URL)
+engine = create_engine(DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 @pytest.fixture(scope="session", autouse=True)

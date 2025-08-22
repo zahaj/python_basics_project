@@ -6,13 +6,13 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 
 # --- Database Connection Setup ---
 
-# These variables will be provided by the environment (docker-compose.yml or ci.yml)
-DB_USER = os.getenv("POSTGRES_USER")
-DB_PASSWORD = os.getenv("POSTGRES_PASSWORD")
-DB_NAME = os.getenv("POSTGRES_DB")
+# Environment variables with safe defaults
+DB_USER = os.getenv("POSTGRES_USER", "briefing_user")
+DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "a_secure_password")
+DB_NAME = os.getenv("POSTGRES_DB", "briefing_db")
 
 # The hostname 'db' is for container-to-container communication.
-DB_HOST = os.getenv("DB_HOST") # Will be 'db' inside Docker, 'localhost' for tests
+DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = os.getenv("DB_PORT", "5432")
 
 # The standard database URL format is postgresql://user:password@host/dbname.
