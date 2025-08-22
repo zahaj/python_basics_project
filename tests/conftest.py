@@ -1,22 +1,20 @@
 import pytest
-import os
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-from daily_briefing.database import engine, Base
+from daily_briefing.database import Base
 
-# Ensure DB env vars are set with sensible defaults
-os.environ.setdefault("DB_HOST", "localhost")
-os.environ.setdefault("DB_PORT", "5432")
-os.environ.setdefault("DB_USER", "briefing_user")
-os.environ.setdefault("DB_PASSWORD", "a_secure_password")
-os.environ.setdefault("DB_NAME", "briefing_db_test")  # local fallback
+# For tests, we'll connect to a separate test database
+# The environment variables will be set by the CI runner
+TEST_DATABASE_URL = "postgresql+psycopg2://briefing_user:a_secure_password@localhost:5432/briefing_db_test"
+engine = create_engine(TEST_DATABASE_URL)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-print(f"[conftest] Using DB_HOST={os.environ['DB_HOST']} DB_NAME={os.environ['DB_NAME']}")
-
-@pytest.fixture(scope="session")
-def db_session_setup():
+@pytest.fixture(scope="session", autouse=True)
+def setup_test_database():
     """
     A session-scoped fixture to set up the database once for all tests
-    that need it.
+    that need it.git
     """
 
     # Drop all tables to ensure a clean state

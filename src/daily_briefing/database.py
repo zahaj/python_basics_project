@@ -1,19 +1,18 @@
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import create_engine, Column, Integer, String, DateTime
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 # --- Database Connection Setup ---
 
-# Construct the database URL from environment variables.
-DB_USER = os.getenv("DB_USER", "briefing_user")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "a_secure_password")
-DB_NAME = os.getenv("DB_NAME", "briefing_db_test")
+# These variables will be provided by the environment (docker-compose.yml or ci.yml)
+DB_USER = os.getenv("POSTGRES_USER")
+DB_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+DB_NAME = os.getenv("POSTGRES_DB")
 
 # The hostname 'db' is for container-to-container communication.
-# For tests running on the host, we'll override this with 'localhost'.
-DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_HOST = os.getenv("DB_HOST") # Will be 'db' inside Docker, 'localhost' for tests
 DB_PORT = os.getenv("DB_PORT", "5432")
 
 # The standard database URL format is postgresql://user:password@host/dbname.
@@ -47,7 +46,7 @@ class BriefingLog(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, nullable=False)
     city = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.now)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))
 
 def create_db_and_tables():
     """

@@ -12,7 +12,12 @@ services:
     # 'environment' sets environment variables inside the container. This is the
     # modern way to pass configuration to a containerized application.
     environment:
-      - WEATHER_API_KEY=ABCDEFG # This can be overridden
+      - POSTGRES_USER=briefing_user
+      - POSTGRES_PASSWORD=a_secure_password
+      - POSTGRES_DB=briefing_db
+      - DB_HOST=db # The hostname for the API to connect to the DB
+      - WEATHER_API_KEY=${WEATHER_API_KEY} # Optional: for local development
+    # ----------------------
     # 'depends_on' ensures that the 'db' service is started *before*
     # this 'api' service starts. This prevents the API from trying to
     # connect to a database that isn't ready yet.
