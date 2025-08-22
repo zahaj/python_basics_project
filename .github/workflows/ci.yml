@@ -23,6 +23,7 @@ jobs:
           POSTGRES_PASSWORD: a_secure_password
           POSTGRES_DB: briefing_db_test   # override for CI
           DB_HOST: db
+          WEATHER_API_KEY: "dummy_key_for_ci"
         run: docker compose up --build -d
 
       - name: Wait for API to be healthy
