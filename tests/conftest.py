@@ -10,7 +10,7 @@ engine = create_engine(DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_test_database():
+def db_session_setup():
     """
     A session-scoped fixture to set up the database once for all tests
     that need it.git
