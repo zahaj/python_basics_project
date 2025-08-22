@@ -13,7 +13,8 @@ from . import auth # Import the new auth module
 api_app = FastAPI(
     title="Daily Briefing API",
     description="An API to generate daily briefings for users.",
-    version="0.1.0"
+    version="0.1.0",
+    debug=True
 )
 
 # --- Fake User Database (for demonstration) ---
