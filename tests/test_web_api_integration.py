@@ -2,7 +2,6 @@ import httpx
 import pytest
 
 from daily_briefing.database import SessionLocal, BriefingLog
-from daily_briefing.auth import get_password_hash
 
 def get_auth_token():
     """Helper function to get an authentication token."""
@@ -11,7 +10,6 @@ def get_auth_token():
         data={"username": "testuser", "password": "testpassword"}
     )
     response.raise_for_status()
-    print(f"Respons from get_auth_token:{response}\n response.json: {response.json()}")
     return response.json()["access_token"]
 
 def test_get_briefing_logs_unauthorized(db_session_setup):
