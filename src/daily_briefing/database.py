@@ -1,3 +1,11 @@
+"""
+Handles all database-related operations.
+
+This module is responsible for:
+1. Establishing the connection to the PostgreSQL database using SQLAlchemy.
+2. Defining the ORM models (e.g., the BriefingLog table).
+3. Providing a session-maker for database interactions.
+"""
 import os
 from datetime import datetime, timezone
 
@@ -6,41 +14,25 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 
 # --- Database Connection Setup ---
 
-# Environment variables with safe defaults
+# These variables are provided by the environment (docker-compose.yml or ci.yml)
+# This makes the database connection configurable without changing the code.
 DB_USER = os.getenv("POSTGRES_USER", "briefing_user")
 DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "a_secure_password")
 DB_NAME = os.getenv("POSTGRES_DB", "briefing_db")
-
-# The hostname 'db' is for container-to-container communication.
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = os.getenv("DB_PORT", "5432")
 
-# The standard database URL format is postgresql://user:password@host/dbname.
 DATABASE_URL = (
     f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 )
 
-# Add this below the DATABASE_URL
-
-# The 'engine' is the core interface to the database.
 engine = create_engine(DATABASE_URL)
-
-# The 'SessionLocal' class will be our factory for creating database sessions.
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# 'Base' is the factory for our declarative model classes.
+SessionLocal = sessionmaker(autoflush=False, bind=engine)
 Base = declarative_base()
 
 # --- SQLAlchemy Model Definition ---
-
-# A SQLAlchemy model is a Python class that represents a table in a database.
-# Each class = a table.
-# Each class attribute = a column in that table.
-# Each instance = a row in the table.
-# This is typically called an ORM model (Object-Relational Mapping), because you're mapping Python objects to database rows.
-
 class BriefingLog(Base):
-    """SQLAlchemy model for the briefing_logs table."""
+    """SQLAlchemy ORM model for the briefing_logs table."""
     __tablename__ = "briefing_logs"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -50,7 +42,9 @@ class BriefingLog(Base):
 
 def create_db_and_tables():
     """
-    Creates all database tables defined by classes inheriting from Base.
-    This is typically called once on application startup.
+    Creates all database tables defined in the Base metadata.
+
+    This function is called once on application startup to ensure the
+    database schema is in place.
     """
     Base.metadata.create_all(bind=engine)
