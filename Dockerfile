@@ -5,8 +5,10 @@
 FROM python:3.11-slim
 
 # Set environment variables to optimize how Python runs inside Docker.
-ENV PYTHONDONTWRITEBYTECODE=1 # Prevents Python from writing .pyc files.
-ENV PYTHONUNBUFFERED=1 # Ensures logs are sent straight to the console.
+# Prevents Python from writing .pyc files.
+ENV PYTHONDONTWRITEBYTECODE=1
+# Ensures logs are sent straight to the console.
+ENV PYTHONUNBUFFERED=1
 
 # Set the working directory inside the container.
 # All subsequent commands will run from this directory.
