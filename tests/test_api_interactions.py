@@ -1,3 +1,6 @@
+"""
+Unit tests for the JSONPlaceholderClient.
+"""
 import unittest
 from unittest.mock import patch, MagicMock
 import requests.exceptions
@@ -9,13 +12,11 @@ class TestJSONPlaceholderClient(unittest.TestCase):
 
     def setUp(self):
         """Set up a client instance for each test."""
-
         self.client = JSONPlaceholderClient()
     
     @patch("daily_briefing.api_interactions.requests.get")
     def test_get_users_success(self, mock_requests_get):
         """Test successful fetching of all users."""
-
         # Arrange
         mock_response = MagicMock()
         mock_response.raise_for_status.return_value = MagicMock()
@@ -26,7 +27,6 @@ class TestJSONPlaceholderClient(unittest.TestCase):
         ]
         mock_response.json.return_value = users
         mock_requests_get.return_value = mock_response
-        # print(type(self.client), dir(self.client))
 
         # Act
         result = self.client.get_users()
@@ -38,8 +38,9 @@ class TestJSONPlaceholderClient(unittest.TestCase):
 
     @patch("daily_briefing.api_interactions.requests.get")
     def test_get_users_failure(self, mock_requests_get):
-        """Test failure when fetching all users."""
-
+        """
+        Tests that the method returns None when the API call fails.
+        """
         # Arrange
         mock_response = MagicMock()
         mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError("404 Client Error: Not Found")
@@ -54,8 +55,10 @@ class TestJSONPlaceholderClient(unittest.TestCase):
 
     @patch("daily_briefing.api_interactions.requests.get")
     def test_get_posts_by_user_success(self, mock_requests_get):
-        """Test successful fetching of posts for a specific user."""
-
+        """
+        Tests the successful fetching of posts for a specific user,
+        verifying that the `userId` is passed as a query parameter.
+        """
         # Arrange
         mock_response = MagicMock()
         mock_response.raise_for_status.return_value = MagicMock()
@@ -78,8 +81,9 @@ class TestJSONPlaceholderClient(unittest.TestCase):
 
     @patch("daily_briefing.api_interactions.requests.post")
     def test_create_post_success(self, mock_requests_post):
-        """Test successful creation of a new post."""
-
+        """
+        Tests the successful creation of a new post via a POST request.
+        """
         # Arrange
         mock_response = MagicMock()
         mock_response.raise_for_status.return_value = MagicMock()

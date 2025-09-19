@@ -1,14 +1,14 @@
-import pytest
+"""
+Unit tests for the OpenWeatherClient.
+"""
 from unittest.mock import patch, MagicMock
 import requests
 
-# Import the code to be tested
 from daily_briefing.weather_client import OpenWeatherClient
 from daily_briefing.models import WeatherInfo
 
-# The order of arguments is the REVERSE of the decorator stack.
-@patch('daily_briefing.weather_client.requests.get')          # This is mock_requests_get
-@patch('daily_briefing.weather_client.ConfigReader')        # This is mock_config_reader_class (the inner one, so it comes first)
+@patch('daily_briefing.weather_client.requests.get')
+@patch('daily_briefing.weather_client.ConfigReader')
 def test_get_weather_success(mock_config_reader_class, mock_requests_get):
     """
     Tests the successful fetching and parsing of weather data using pytest.
@@ -73,7 +73,7 @@ def test_get_weather_success(mock_config_reader_class, mock_requests_get):
 @patch("daily_briefing.weather_client.requests.get")
 @patch("daily_briefing.weather_client.ConfigReader")
 def test_get_weather_city_not_found(mock_config_reader_class, mock_requests_get):
-    """Test the graceful handling of a 404 City Not Found error."""
+    """Test the graceful handling of a 404 City Not Found error from the API."""
     # Arrange
     mock_config_instance = mock_config_reader_class.return_value
     mock_config_instance.get_api_key.return_value = "fake_api_key"
@@ -98,4 +98,3 @@ def test_get_weather_city_not_found(mock_config_reader_class, mock_requests_get)
     # Assert
     assert result is None
     mock_requests_get.assert_called_once()
-

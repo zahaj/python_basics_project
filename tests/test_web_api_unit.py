@@ -1,59 +1,85 @@
+"""
+Unit tests for the FastAPI web application.
+
+These tests focus on the API layer in isolation, with all external
+dependencies (like the database and external API clients) mocked.
+This allows for fast and reliable testing of the API's logic in isolation
+without needing to run Docker or have live network connections.
+"""
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import MagicMock, patch
-from daily_briefing.web_api import api_app, get_db
+from unittest.mock import MagicMock
 
-# This test doesn't require Docker to be running. It will test the API in isolation.
+from daily_briefing.web_api import api_app, get_db, get_briefing_app
+from daily_briefing.models import BriefingResponse
 
 @pytest.fixture
-def client_with_mock_db():
+def client_with_mock_deps():
     """
-    Fixture to create a TestClient with the database dependency mocked.
-    Yields both the client and the mock session for assertions.
-    """
-    # --- Setup for the Mock Database ---
-    # This is the mock object that our override function will yield.
-    mock_db_session = MagicMock()
+    Pytest fixture to create a FastAPI TestClient with mocked dependencies.
 
-    # This function will replace the real get_db during the test.
+    This fixture uses FastAPI's dependency override mechanism to replace the
+    real `get_db` dependency and application logic with mock objects.
+    This allows us to test fast the API endpoint's interaction with the database
+    (e.g., that it calls `db.add()` and `db.commit()`) without needing a real
+    database connection.
+
+    Yields:
+        tuple: A tuple containing the configured TestClient, the mock DB session
+        and the mock briefing app.
+    """
+    mock_db_session = MagicMock()
+    mock_briefing_app = MagicMock()
+
     def override_get_db():
+        """A dependency override that yields the mock session."""
         yield mock_db_session
 
-    # Apply the override to the app instance
-    api_app.dependency_overrides[get_db] = override_get_db
-    # The TestClient uses the app with the overriden dependency
-    client = TestClient(api_app)
+    def override_get_briefing_app():
+        yield mock_briefing_app
 
-    # Yield both the client and the mock so the test can use them
-    yield client, mock_db_session
+    api_app.dependency_overrides[get_db] = override_get_db
+    api_app.dependency_overrides[get_briefing_app] = override_get_briefing_app
+
+    client = TestClient(api_app)
+    yield client, mock_db_session, mock_briefing_app
 
     # Teardown: Clean up the override after the test is done
     api_app.dependency_overrides.clear()
 
-# We still need to mock the clients that are created inside the endpoint.
-@patch("daily_briefing.web_api.JSONPlaceholderClient")
-@patch("daily_briefing.web_api.OpenWeatherClient")
-def test_get_briefing_unit_success(mock_weather_client_class, mock_api_client_class, client_with_mock_db):
+def test_get_briefing_unit_success(client_with_mock_deps):
     """
-    Unit test for the briefing endpoint using fixtures for setup.
-    Mocks all external dependencies.
+    Tests a successful request to the /briefing/{user_id} endpoint.
+
+    This test verifies that the endpoint correctly calls the application logic,
+    logs the event to the database, and returns a successful response. It mocks
+    the briefing application and the database to ensure the test is isolated.
     """
     # Arrange
-    # Unpack the tuple yielded by the fixture
-    client, mock_db_session = client_with_mock_db
-    # Reset the mock before each test run to ensure isolation.
-    mock_db_session.reset_mock()    
+    # Unpack the client and mock db_session yielded from the fixture
+    client, mock_db_session, mock_briefing_app = client_with_mock_deps
+    mock_db_session.reset_mock()
+    mock_briefing_app.reset_mock()  
 
-    # Configure the return values for the mocked API clients.
-    mock_api_client_instance = mock_api_client_class.return_value
-    mock_api_client_instance.get_user.return_value = {'name': 'Test User'}
-    mock_api_client_instance.get_posts_by_user.return_value = []
+    # Configure the mock briefing app to return a dummy response
+    mock_briefing_app.generate_briefing_for_api.return_value = BriefingResponse(
+        user_name="Mock User",
+        city="Mock City",
+        weather_summary="Always sunny",
+        latest_post_title="Mock Post"
+    )
 
     # Act
-    response = client.get("/briefing/99?city=Unit Test City")
+    response = client.get("/briefing/99?city=Mock City")
 
     # Assert
+    # 1. Assert that the API returned a successful status code.
     assert response.status_code == 200
-    # Verify that the database session was used correctly
+    assert response.json()["user_name"] == "Mock User"
+    # 2. Assert that the application logic was called correctly.
+    mock_briefing_app.generate_briefing_for_api.assert_called_once_with(
+        user_id=99, city="Mock City"
+    )
+    # 3. Assert that a log entry was added and committed to the database.
     mock_db_session.add.assert_called_once()
     mock_db_session.commit.assert_called_once()
