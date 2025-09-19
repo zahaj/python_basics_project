@@ -1,4 +1,8 @@
+# This file is for configuring a Python package.
+# It describes how to install the project and its dependencies.
+
 [build-system]
+# Specifies the tools needed to build the package.
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
@@ -8,38 +12,42 @@ version = "0.1.0"
 authors = [
   { name="Ewa Zahajkiewicz", email="zahajkiewicz@gmail.com" },
 ]
-description = "A command-line tool to generate a daily briefing."
-readme = "README.md" # You should create this file!
+description = "A containerized, tested, and authenticated API to generate a daily briefing."
+readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-# Define the packages your project directly depends on.
+
+# The packages required for the application to run.
 dependencies = [
     "fastapi",
     "uvicorn",
     "requests",
     "typer",
-    "rich",
+    "rich", # Used by Typer for rich text formatting in the CLI
     "sqlalchemy",
-    "psycopg2-binary",
-    "python-jose[cryptography]",
-    "passlib[bcrypt]",
-    "python-multipart",
+    "psycopg2-binary", # PostgreSQL driver
+    "python-jose[cryptography]", # For JWT handling
+    "passlib[bcrypt]", # For password hashing
+    "python-multipart", # Required by FastAPI for form data (used in /token)
 ]
 
+# These dependencies are only needed for testing.
+# They are installed by running `pip install .[test]`
 [project.optional-dependencies]
 test = [
     "pytest",
-    "httpx",
+    "httpx", # HTTP client for testing APIs
 ]
 
 [project.urls]
 "Homepage" = "https://github.com/zahaj/python_basics_project"
 "Bug Tracker" = "https://github.com/zahaj/python_basics_project/issues"
 
-# This is the magic part! It creates a command-line script.
 [project.scripts]
+# This makes the CLI application installable as a command.
+# After `pip install .`, you can run `briefing` directly from the terminal.
 briefing = "daily_briefing.main:app"

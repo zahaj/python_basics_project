@@ -1,5 +1,9 @@
+# Defines the Continuous Integration (CI) pipeline.
+# It automatically builds, tests, and validates the application on every push.
+
 name: Run Python Tests
 
+# This workflow runs on every 'push' or 'pull_request' to the 'main' branch.
 on:
   push:
     branches: [ "main" ]
@@ -8,17 +12,21 @@ on:
 
 jobs:
   build-and-test:
+    # The job runs on a fresh Ubuntu virtual machine provided by GitHub.
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Check out the repository's code onto the runner.
       - name: Check out repository code
         uses: actions/checkout@v4
 
+      # Step 2: Build and run the entire application stack using Docker Compose.
       - name: Build and run Docker Compose services
-        # We pass an environment variable to the 'docker compose' command.
-        # This will override the POSTGRES_DB value in docker-compose.yml
-        # for this specific run, causing it to create the test database.
+        # We pass environment variables to the 'docker compose' command, which
+        # will use these to configure the services.
         env:
+          # This overrides the database name in docker-compose.yml, creating
+          # a separate, safe 'briefing_db_test' for the CI run.
           POSTGRES_USER: briefing_user
           POSTGRES_PASSWORD: a_secure_password
           POSTGRES_DB: briefing_db_test   # override for CI
@@ -26,35 +34,38 @@ jobs:
           WEATHER_API_KEY: "dummy_key_for_ci"
         run: docker compose up --build -d
 
+      # Step 3: Wait for the API to be fully started and responsive.
       - name: Wait for API to be healthy
         run: |
-          # Wait for up to 30 seconds for the API to respond
+          # Wait for up to 30 seconds for the API to respond. It tries to connect to the /docs endpoint every 2 seconds.
+          # The step only succeeds once the API is ready, preventing flaky tests.
           timeout 30s bash -c 'until curl -s http://localhost:8000/docs > /dev/null; do echo "Waiting for API server..."; sleep 2; done'
 
+      # Optional Step: Check that the database tables were created.
+      # This is a useful debugging step to verify the database state before tests run.
       - name: Check tables in DB
         run: docker compose exec db psql -U briefing_user -d briefing_db_test -c "\dt"
-
+  
+        # Step 4: Set up a Python environment on the runner for running pytest.
       - name: Set up Python for test runner
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      # Step 5: Install only the test dependencies onto the runner.
       - name: Install test dependencies
         run: pip install -e ".[test]"
 
+      # Step 6: Run the test suite.
       - name: Run tests
-        # The tests run on the host runner, connecting to the services
-        # exposed by Docker Compose on localhost.
-        # The tests in conftest.py are hardcoded to connect to the
-        # 'briefing_db_test' database, which was just created.
-        env:  # same env vars for tests
-          POSTGRES_USER: briefing_user
-          POSTGRES_PASSWORD: a_secure_password
-          POSTGRES_DB: briefing_db_test
-          DB_HOST: localhost
-          DB_PORT: 5432
+        # Pytest, running on the host, connects to the services exposed by
+        # Docker Compose on localhost. The conftest.py is configured to
+        # use the 'briefing_db' for local tests, which matches what's
+        # running in Docker now, after the CI override.
         run: pytest
 
+      # Step 7: If any of the previous steps fail, show the container logs.
+      # This is crucial for debugging a failed CI run.
       - name: Show container logs on failure
         if: failure()
         run: docker compose logs --timestamps api

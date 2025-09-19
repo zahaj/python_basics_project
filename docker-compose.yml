@@ -1,33 +1,38 @@
+# This file defines and configures the multi-container setup for the application.
+# It allows running the API and its database together with a single command.
+
 services:
+  # The FastAPI application service
   api:
-    # ... configuration for our FastAPI app container ...
     # 'build: .' tells Docker Compose to look for a Dockerfile in the
     # current directory and build it to create the image for this service.
     build: .
     container_name: briefing-container
     # 'ports' maps the host machine's port 8000 to the container's port 8000.
-    # This is how we access the API from our browser.
+    # This is how to access the API from a browser.
     ports:
       - "8000:8000"
     # 'environment' sets environment variables inside the container. This is the
     # modern way to pass configuration to a containerized application.
+    # The `${VAR:-default}` syntax uses the environment variable if it exists,
+    # otherwise it falls back to the default value.
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-briefing_user}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-a_secure_password}
       - POSTGRES_DB=${POSTGRES_DB:-briefing_db}
-      - DB_HOST=db
-      - WEATHER_API_KEY=${WEATHER_API_KEY}
-    # ----------------------
-    # 'depends_on' ensures that the 'db' service is started *before*
-    # this 'api' service starts. This prevents the API from trying to
-    # connect to a database that isn't ready yet.
+      - DB_HOST=db # The API connects to the DB using its service name 'db'.
+      - WEATHER_API_KEY=${WEATHER_API_KEY} # For local development
+    # 'depends_on' ensures that the API container only starts after the
+    # database container is fully healthy and ready for connections.
+    # This prevents the API from trying to connect to a database that
+    # isn't ready yet.
     depends_on:
       db:
         condition: service_healthy
+  
   # The PostgreSQL database service
   db:
-    # ... configuration for our PostgreSQL database container ...
-    # 'image' pulls a pre-built image from Docker Hub. We don't need to build it.
+    # 'image' pulls a pre-built image from Docker Hub.
     image: postgres:15-alpine
     container_name: briefing-db
     # PostgreSQL requires these environment variables to initialize the database.
@@ -37,6 +42,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-briefing_db}
     # 'volumes' makes data persistent. It maps the named volume 'postgres_data'
     # to the directory inside the container where PostgreSQL stores its data.
+    # This ensures the database data survives container restarts.
     volumes:
       - postgres_data:/var/lib/postgresql/data
     # It's good practice to map the PostgreSQL port in case you want to connect
