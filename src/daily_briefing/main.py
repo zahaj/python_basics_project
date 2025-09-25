@@ -25,6 +25,15 @@ app = typer.Typer(
     no_args_is_help=True  # Show help if no command is given
 )
 
+# This dependency provider function is responsible for creating the
+# application instance. Our tests will mock this function directly.
+def get_DailyBriefing() -> DailyBriefing:
+    """Dependency to create and provide the DailyBriefing app instance."""
+    config_reader = ConfigReader()
+    api_client = JSONPlaceholderClient()
+    weather_client = OpenWeatherClient(config_reader=config_reader)
+    return DailyBriefing(api_client=api_client, weather_client=weather_client)
+
 @app.command()
 def get_briefing(
     user_id: Annotated[int, typer.Argument(
@@ -34,22 +43,16 @@ def get_briefing(
         "--city", "-c",
         help="The city for the weather forecast (e.g., 'London')."
     )]
-):
+    ):
     """
     Generates and prints a daily briefing for a specific user and city.
     """
     try:
         # --- Dependency Setup ---
-        # This logic is now inside the command, so it only runs when invoked.
         typer.echo(f"Requesting briefing for User ID: {user_id}, City: {city}...")
-        config_reader = ConfigReader()
-        api_client = JSONPlaceholderClient()
-        weather_client = OpenWeatherClient(config_reader=config_reader)
-        briefing_app = DailyBriefing(api_client=api_client, weather_client=weather_client)
-        
+        briefing_app: DailyBriefing = get_DailyBriefing()
         # --- Application Execution ---
         briefing_message = briefing_app.generate_briefing(user_id=user_id, city=city)
-        
         # --- Output ---
         typer.secho("\n--- Your Briefing ---", fg=typer.colors.CYAN, bold=True)
         typer.echo(briefing_message)

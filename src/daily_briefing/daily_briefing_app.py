@@ -25,50 +25,6 @@ class DailyBriefing:
         self.api_client = api_client
         self.weather_client = weather_client
 
-    def generate_briefing(self, user_id: int, city: str) -> Optional[str]:
-        """
-        Generates a daily briefing string suitable for CLI output.
-        Fetches data concurrently and formats it into a human-readable string.
-
-        Args:
-            user_id: The ID of the user.
-            city: The city for the weather forecast.
-
-        Returns:
-            A formatted string containing the briefing, or None on failure.
-
-        Raises:
-            ValueError: If the user with the given ID is not found.
-        """
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            user_future = executor.submit(self.api_client.get_user, user_id)
-            weather_future = executor.submit(self.weather_client.get_weather, city)
-            posts_future = executor.submit(self.api_client.get_posts_by_user, user_id)
-
-        user_info = user_future.result()
-        if not user_info:
-            raise ValueError(f"User with ID {user_id} not found.")
-
-        user_name = user_info.get("name", "there")
-        weather_info = weather_future.result()
-        user_posts = posts_future.result()
-
-        latest_post_title = user_posts[0].get("title") if user_posts else None
-
-        briefing = f"Good morning, {user_name}! "
-        if weather_info:
-            briefing += (f"The current weather in {weather_info.city} is {weather_info.description} "
-                         f"(feels like {weather_info.feels_like}°C). ")
-        else:
-            briefing += "Could not retrieve weather information. "
-
-        if latest_post_title:
-            briefing += f"Your latest post is titled: '{latest_post_title}'."
-        else:
-            briefing += "You have no new posts."
-
-        return briefing
-
     def generate_briefing_for_api(self, user_id: int, city: str) -> BriefingResponse:
         """
         Generates a daily briefing as a structured Pydantic object for the API.
@@ -117,7 +73,33 @@ class DailyBriefing:
             weather_summary=weather_summary,
             latest_post_title=latest_post_title,            
         )
+    
+    def generate_briefing(self, user_id: int, city: str) -> Optional[str]:
+        """
+        Generates a daily briefing string suitable for CLI output.
+        Fetches data concurrently and formats it into a human-readable string.
 
+        Args:
+            user_id: The ID of the user.
+            city: The city for the weather forecast.
+
+        Returns:
+            A formatted string containing the briefing, or None on failure.
+
+        Raises:
+            ValueError: If the user with the given ID is not found.
+        """
+        try:
+            response_data = self.generate_briefing_for_api(user_id, city)
+            string = (
+                f"Good morning, {response_data.user_name}! "
+                f"{response_data.weather_summary} "
+                f"Your latest post is titled: '{response_data.latest_post_title}'."
+            )
+            return string
+        except ValueError as e:
+            return str(e)
+        
     def _format_weather_summary(self, weather_info: Optional[WeatherInfo]) -> Optional[str]:
         """Helper method to create a human-readable weather summary string."""
         if not weather_info:

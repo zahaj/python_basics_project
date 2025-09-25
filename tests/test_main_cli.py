@@ -2,7 +2,7 @@
 Unit tests for the Command-Line Interface.
 """
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from typer.testing import CliRunner
 
 # Import the app object from the CLI script
@@ -13,17 +13,18 @@ class TestMainCLI(unittest.TestCase):
     def setUp(self):
         self.runner = CliRunner()
 
-    @patch("daily_briefing.main.DailyBriefing")
+    @patch("daily_briefing.main.get_DailyBriefing")
     def test_get_briefing_success(
-        self, 
-        mock_daily_briefing_class
+        self,
+        mock_get_daily_briefing
     ):
         """Test the 'get-briefing' CLI command for a successful run."""
         # Arrange
         # --- Configure the mock DailyBriefing instance ---
-        # Get a handle to the instance that will be created inside the CLI command.   
-        mock_briefing_instance = mock_daily_briefing_class.return_value
+        # Get a handle to the instance that will be created inside the CLI command.
+        mock_briefing_instance = MagicMock()
         mock_briefing_instance.generate_briefing.return_value = "Good morning, Test User!"
+        mock_get_daily_briefing.return_value = mock_briefing_instance
 
         # Act
         # --- Invoke the CLI command ---
@@ -32,10 +33,11 @@ class TestMainCLI(unittest.TestCase):
 
         # Assert
         self.assertEqual(result.exit_code, 0, f"CLI exited with an error: {result.exception}")
+
         self.assertIn("Good morning, Test User!", result.stdout)
         # Verify that the mocked method was actually called.
         mock_briefing_instance.generate_briefing.assert_called_once_with(user_id=1, city="Testville")
-    
+
     @patch("daily_briefing.main.ConfigReader")
     def test_get_briefing_config_not_found(self, mock_config_reader_class):
         """Test the CLI's error handling when config.ini is missing."""

@@ -27,11 +27,7 @@ jobs:
         env:
           # This overrides the database name in docker-compose.yml, creating
           # a separate, safe 'briefing_db_test' for the CI run.
-          POSTGRES_USER: briefing_user
-          POSTGRES_PASSWORD: a_secure_password
           POSTGRES_DB: briefing_db_test   # override for CI
-          DB_HOST: db
-          WEATHER_API_KEY: "dummy_key_for_ci"
         run: docker compose up --build -d
 
       # Step 3: Wait for the API to be fully started and responsive.
@@ -62,6 +58,12 @@ jobs:
         # Docker Compose on localhost. The conftest.py is configured to
         # use the 'briefing_db' for local tests, which matches what's
         # running in Docker now, after the CI override.
+        env:
+          # We must provide the environment variables to the test runner itself.
+          # This ensures that when the test suite loads, it builds the correct
+          # DATABASE_URL for the CI environment.
+          POSTGRES_DB: briefing_db_test
+          DB_HOST: localhost # Pytest on the runner connects to the port exposed by Docker
         run: pytest
 
       # Step 7: If any of the previous steps fail, show the container logs.

@@ -6,16 +6,15 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from daily_briefing.database import Base
+from daily_briefing.database import Base, DATABASE_URL
 
-# This URL points to the database for local integration testing. It matches
-# the database name in docker-compose.yml. The CI pipeline will override
-# the database name to 'briefing_db_test' for safety.
-TEST_DATABASE_URL = "postgresql+psycopg2://briefing_user:a_secure_password@localhost:5432/briefing_db"
+# This engine is created using the DATABASE_URL from the main application code.
+# The URL is built from environment variables, which allows the CI pipeline
+# to point this to a test-specific database.
+engine = create_engine(DATABASE_URL)
 
 # This sessionmaker is configured once and imported by tests that need to
 # interact with the database directly.
-engine = create_engine(TEST_DATABASE_URL)
 TestingSessionLocal = sessionmaker(autoflush=False, bind=engine)
 
 
